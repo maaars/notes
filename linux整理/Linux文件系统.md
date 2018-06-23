@@ -88,17 +88,29 @@ lrwxr-xr-x   1 mars  staff        7  6 20 10:54 tmp.sql-so -> tmp.sql
 
  Linux内核从2.6.28开始支持ext4文件系统，相比于ext3提供了更佳的性能和可靠性。下面先简单罗列出二者的差异，后续文章再来深入探索。
 **1. 与 Ext3 兼容**。 执行若干条命令，就能从 Ext3 在线迁移到 Ext4，而无须重新格式化磁盘或重新安装系统。原有 Ext3 数据结构照样保留，Ext4 作用于新数据，当然，整个文件系统因此也就获得了 Ext4 所支持的更大容量。 
+
 **2. 更大的文件系统和更大的文件**。 较之 Ext3 目前所支持的最大 16TB 文件系统和最大 2TB 文件，Ext4 分别支持 1EB的文件系统，以及 最大16TB 的文件。 
+
 **3. 无限数量的子目录**。 Ext3 目前只支持 32,000 个子目录，而 Ext4 支持无限数量的子目录。 
+
 **4. Extents**。 Ext3 采用间接块映射，当操作大文件时，效率极其低下。比如一个 100MB 大小的文件，在 Ext3 中要建立 25,600 个数据块（每个数据块大小为 4KB）的映射表。而 Ext4 引入了现代文件系统中流行的 extents 概念，每个 extent 为一组连续的数据块，上述文件则表示为“该文件数据保存在接下来的 25,600 个数据块中”，提高了不少效率。 
+
 **5. 多块分配**。 当写入数据到 Ext3 文件系统中时，Ext3 的数据块分配器每次只能分配一个 4KB 的块，写一个 100MB 文件就要调用 25,600 次数据块分配器，而 Ext4 的多块分配器“multiblock allocator”（mballoc） 支持一次调用分配多个数据块。 
+
 **6. 延迟分配**。 Ext3 的数据块分配策略是尽快分配，而 Ext4 和其它现代文件操作系统的策略是尽可能地延迟分配，直到文件在 cache 中写完才开始分配数据块并写入磁盘，这样就能优化整个文件的数据块分配，与前两种特性搭配起来可以显著提升性能。 
+
 **7. 快速 fsck**。 以前执行 fsck 第一步就会很慢，因为它要检查所有的 inode，现在 Ext4 给每个组的 inode 表中都添加了一份未使用 inode 的列表，今后 fsck Ext4 文件系统就可以跳过它们而只去检查那些在用的 inode 了。 
+
 **8. 日志校验**。 日志是最常用的部分，也极易导致磁盘硬件故障，而从损坏的日志中恢复数据会导致更多的数据损坏。Ext4 的日志校验功能可以很方便地判断日志数据是否损坏，而且它将 Ext3 的两阶段日志机制合并成一个阶段，在增加安全性的同时提高了性能。 
+
 **9. “无日志”（No Journaling）模式**。 日志总归有一些开销，Ext4 允许关闭日志，以便某些有特殊需求的用户可以借此提升性能。 
+
 **10. 在线碎片整理**。 尽管延迟分配、多块分配和 extents 能有效减少文件系统碎片，但碎片还是不可避免会产生。Ext4 支持在线碎片整理，并将提供 e4defrag 工具进行个别文件或整个文件系统的碎片整理。 
+
 **11. inode 相关特性**。 Ext4 支持更大的 inode，较之 Ext3 默认的 inode 大小 128 字节，Ext4 为了在 inode 中容纳更多的扩展属性（如纳秒时间戳或 inode 版本），默认 inode 大小为 256 字节。Ext4 还支持快速扩展属性（fast extended attributes）和 inode 保留（inodes reservation）。 
+
 **12. 持久预分配（Persistent preallocation）**。 P2P 软件为了保证下载文件有足够的空间存放，常常会预先创建一个与所下载文件大小相同的空文件，以免未来的数小时或数天之内磁盘空间不足导致下载失败。 Ext4 在文件系统层面实现了持久预分配并提供相应的 API（libc 中的 posix_fallocate()），比应用软件自己实现更有效率。 
+
 **13. 默认启用 barrier**。 磁盘上配有内部缓存，以便重新调整批量数据的写操作顺序，优化写入性能，因此文件系统必须在日志数据写入磁盘之后才能写 commit 记录，若 commit 记录写入在先，而日志有可能损坏，那么就会影响数据完整性。Ext4 默认启用 barrier，只有当 barrier 之前的数据全部写入磁盘，才能写 barrier 之后的数据。
 
 ## **4 小结**
@@ -106,8 +118,8 @@ lrwxr-xr-x   1 mars  staff        7  6 20 10:54 tmp.sql-so -> tmp.sql
 ​    目前，大多数Linux发行版，包括我的Ubuntu 16.04的默认支持文件系统是ext4，ext4也是首个专门为Linux设计的文件系统，我们可以轻易的从ext3迁移到ext4，对于程序员来说，了解文件系统的演化脉络是十分重要的，后续会继续深入讨论Linux下的各个文件系统。
 
 参考资料
-【1】[鸟哥的Linux私房菜第八章](https://link.zhihu.com/?target=http%3A//cn.linux.vbird.org/linux_basic/0230filesystem_1.php)
-【2】[Ext2、Ext3和Ext4之间的区别](https://link.zhihu.com/?target=http%3A//misujun.blog.51cto.com/2595192/883949)
-【3】[Linux 文件系统剖析](https://link.zhihu.com/?target=http%3A//www.ibm.com/developerworks/cn/linux/l-linux-filesystem/)
+【1】[鸟哥的Linux私房菜第八章](http://cn.linux.vbird.org/linux_basic/0230filesystem_1.php)
+【2】[Ext2、Ext3和Ext4之间的区别](http://blog.51cto.com/misujun/883949)
+【3】[Linux 文件系统剖析](https://www.ibm.com/developerworks/cn/linux/l-linux-filesystem/)
 
 ## 
