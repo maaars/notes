@@ -29,3 +29,16 @@
 [Linux文件系统笔记整理](https://github.com/junzhaoATtju/notes/blob/master/linux%E6%95%B4%E7%90%86/Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F.md)
 
 [重复造轮子—golang重写Linux命令](https://github.com/junzhaoATtju/ls-go)
+
+## 每天学点go
+
+> [go web编程](https://github.com/astaxie/build-web-application-with-golang/blob/master/zh/preface.md)
+
+> [go 语言圣经](https://books.studygolang.com/gopl-zh/)
+
+> [go标准库中文参考](https://wizardforcel.gitbooks.io/golang-stdlib-ref/content/45.html)
+
+> [go标准库英文原版](https://golang.org/pkg/net/url/)
+
+> go标准库思维导图整理
+
