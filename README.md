@@ -35,6 +35,8 @@
 > [go web编程](https://github.com/astaxie/build-web-application-with-golang/blob/master/zh/preface.md)
 
 > [go 语言圣经](https://books.studygolang.com/gopl-zh/)
+>
+> [go语言圣经代码库](https://github.com/adonovan/gopl.io/)
 
 > [go标准库中文参考](https://wizardforcel.gitbooks.io/golang-stdlib-ref/content/45.html)
 
@@ -42,3 +44,6 @@
 
 > go标准库思维导图整理
 
+# Elasticsearch权威指南
+
+[Elasticsearch权威指南](https://es.xiaoleilu.com/010_Intro/25_Tutorial_Indexing.html)
