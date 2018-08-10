@@ -47,3 +47,9 @@
 # Elasticsearch权威指南
 
 [Elasticsearch权威指南](https://es.xiaoleilu.com/010_Intro/25_Tutorial_Indexing.html)
+
+
+
+# 开源数据库--tidb
+
+[文档介绍](https://github.com/pingcap/docs-cn)
