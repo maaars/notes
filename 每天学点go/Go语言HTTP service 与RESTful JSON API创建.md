@@ -732,7 +732,7 @@ eTag - 如果你正在构建一些需要扩展的东西，你可能需要实现e
 
 [https://github.com/corylanou/...](https://github.com/corylanou/tns-restful-json-api)
 
-[对应的思维导图]()
+对应的思维导图:![https://github.com/junzhaoATtju/notes/blob/master/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E7%82%B9go/restful%20api.xmind]()
 
 ## 总结
 
