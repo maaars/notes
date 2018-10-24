@@ -17,7 +17,7 @@ JSON建构于两种结构：
 
 这些都是常见的数据结构。事实上大部分现代计算机语言都以某种形式支持它们。这使得一种数据格式在同样基于这些结构的编程语言之间交换成为可能。
 
-## 基本的Web服务器
+## v1.基本的Web服务器
 
 从根本上讲，RESTful服务首先是Web服务。 因此我们可以先看看Go语言中基本的Web服务器是如何实现的。下面例子实现了一个简单的Web服务器，**对于任何请求**，**服务器都响应请求的URL回去**。
 
@@ -59,7 +59,7 @@ func ListenAndServe(addr string, handler Handler) error {
 > go run basic_server.go
 ```
 
-## 添加路由
+## v2.添加路由
 
 虽然标准库包含有router, 但是我发现很多人对它的工作原理感觉很困惑。 我在自己的项目中使用过各种不同的第三方router库。 最值得一提的是Gorilla Web ToolKit的mux router。
 
@@ -99,7 +99,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 如果你足够细心，你会发现之前的基本web服务访问[http://localhost](https://link.juejin.im/?target=http%3A%2F%2Flocalhost):8080/abc能正常响应: 'Hello, "/abc"', 但是在添加了路由之后，就只能访问[http://localhost](https://link.juejin.im/?target=http%3A%2F%2Flocalhost):8080了。 原因很简单，因为我们只添加了对"/"的解析，其他的路由都是无效路由，因此都是404。
 
-## 创建一些基本的路由
+## v3.创建一些基本的路由
 
 既然我们加入了路由，那么我们就可以再添加更多路由进来了。
 
@@ -148,7 +148,7 @@ func TodoShow(w http.ResponseWriter, r *http.Request) {
 
 这样就允许我们传递id给路由，并且能使用具体的记录来响应请求。
 
-## 基本模型
+## v4.基本模型
 
 路由现在已经就绪，是时候创建Model了，可以用model发送和检索数据。在Go语言中，model可以使用结构体来实现，而其他语言中model一般都是使用类来实现。
 
@@ -219,7 +219,7 @@ func TodoIndex(w http.ResponseWriter, r *http.Request) {
 ]
 ```
 
-## 更好的Model
+## V5.更好的Model
 
 对于经验丰富的老兵来说，你可能已经发现了一个问题。响应JSON的**每个key都是首字母<u>大写</u>的**，虽然看起来微不足道，但是响应JSON的key首字母大写不是习惯的做法。 那么下面教你如何解决这个问题:
 
@@ -233,7 +233,7 @@ type Todo struct {
 
 其实很简单，就是在结构体中添加标签属性， 这样可以完全控制结构体如何编排(marshalled)成JSON。
 
-## 拆分代码
+## V6.规范代码组织结构
 
 到目前为止，我们所有代码都在一个文件中。显得杂乱， 是时候拆分代码了。我们可以将代码按照功能拆分成下面多个文件。
 
@@ -285,54 +285,19 @@ router.go
 package main
 
 import (
-    "net/http"
-
-    "github.com/gorilla/mux"
+	"github.com/gorilla/mux"
 )
-
-type Route struct {
-    Name        string
-    Method      string
-    Pattern     string
-    HandlerFunc http.HandlerFunc
-}
-
-type Routes []Route
 
 func NewRouter() *mux.Router {
 
-    router := mux.NewRouter().StrictSlash(true)
-    for _, route := range routes {
-        router.
-            Methods(route.Method).
-            Path(route.Pattern).
-            Name(route.Name).
-            Handler(route.HandlerFunc)
-    }
-
-    return router
+	router := mux.NewRouter().StrictSlash(true)
+	
+	router.HandleFunc("/", Index)
+	router.HandleFunc("/todos", TodoIndex)
+	router.HandleFunc("/todos/{todoId}", TodoShow)
+	return router
 }
 
-var routes = Routes{
-    Route{
-        "Index",
-        "GET",
-        "/",
-        Index,
-    },
-    Route{
-        "TodoIndex",
-        "GET",
-        "/todos",
-        TodoIndex,
-    },
-    Route{
-        "TodoShow",
-        "GET",
-        "/todos/{todoId}",
-        TodoShow,
-    },
-}
 ```
 
 todo.go
@@ -369,7 +334,7 @@ func main() {
 }
 ```
 
-## 更好的Routing
+### 更好的Routing
 
 我们重构的过程中，我们创建了一个更多功能的routes文件。 这个新文件利用了一个包含多个关于路由信息的结构体。 注意，这里我们可以指定请求的类型，例如GET, POST, DELETE等等。
 
@@ -427,7 +392,7 @@ var routes = Routes{
 }
 ```
 
-## 输出Web日志
+## v7.输出Web日志
 
 在拆分的路由文件中，我也包含有一个不可告人的动机。稍后你就会看到，拆分之后很容易使用另外的函数来修饰http处理器。
 
@@ -462,7 +427,7 @@ func Logger(inner http.Handler, name string) http.Handler {
 
 这是Go语言中非常标准的惯用方式。其实也是函数式编程的惯用方式。 非常有效，我们只需要将Handler传入该函数， 然后它会将传入的handler包装一下，添加web日志和耗时统计功能。
 
-## 应用Logger修饰器
+### 应用Logger修饰器
 
 要应用Logger修饰符， 我们可以创建router， 我们只需要简单的将我们所有的当前路由都包到其中， NewRouter函数修改如下:
 
@@ -493,7 +458,7 @@ func NewRouter() *mux.Router {
 2014/11/19 12:41:39 GET /todos TodoIndex 148.324us
 ```
 
-## 这个路由文件太疯狂...让我们重构它吧
+## v8.进一步拆分路由规则
 
 路由routes文件现在已经变得稍微大了些， 下面我们将它分解成多个文件:
 
@@ -560,7 +525,7 @@ func NewRouter() *mux.Router {
 }
 ```
 
-## 另外再承担一些责任
+### 另外再承担一些责任
 
 到目前为止，我们已经有了一些相当好的样板代码(boilerplate), 是时候重新审视我们的处理器了。我们需要稍微多的责任。 首先修改TodoIndex，添加下面两行代码:
 
@@ -582,7 +547,7 @@ func TodoIndex(w http.ResponseWriter, r *http.Request) {
 
 Go语言的net/http服务器会尝试为我们猜测输出内容类型(然而并不是每次都准确的), 但是既然我们已经确切的知道响应类型，我们总是应该自己设置它。
 
-## 稍等片刻，我们的数据库在哪里?
+## V9.支持post和delete方法
 
 很明显，如果我们要创建RESTful API, 我们需要一些用于存储和检索数据的地方。然而，这个是不是本文的范围之内， 因此我们将简单的创建一个非常简陋的模拟数据库(非线程安全的)。
 
@@ -630,7 +595,7 @@ func RepoDestroyTodo(id int) error {
 }
 ```
 
-## 给Todo添加ID
+### 给Todo添加ID
 
 我们创建了模拟数据库，我们使用并赋予id, 因此我们相应的也需要更新我们的Todo结构体。
 
@@ -649,7 +614,7 @@ type Todo struct {
 type Todos []Todo
 ```
 
-## 更新我们的TodoIndex
+### 更新我们的TodoIndex
 
 要使用数据库，我们需要在TodoIndex中检索数据。修改代码如下:
 
@@ -663,7 +628,7 @@ func TodoIndex(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-## POST JSON
+### POST JSON
 
 到目前为止，我们只是输出JSON, 现在是时候进入存储一些JSON了。
 
@@ -678,7 +643,7 @@ Route{
 },
 ```
 
-## Create路由
+### Create路由
 
 ```
 func TodoCreate(w http.ResponseWriter, r *http.Request) {
@@ -713,7 +678,7 @@ func TodoCreate(w http.ResponseWriter, r *http.Request) {
 
 最后，如果所有都通过了，我们就响应201状态码，表示请求创建的实体已经成功创建了。 我们同样还是响应回代表我们创建的实体的json， 它会包含一个id, 客户端可能接下来需要用到它。
 
-## POST一些JSON
+### POST一些JSON
 
 我们现在有了伪repo, 也有了create路由，那么我们需要post一些数据。 我们使用curl通过下面的命令来达到这个目的:
 
@@ -746,7 +711,7 @@ curl -H "Content-Type: application/json" -d '{"name": "New Todo"}' http://localh
 ]
 ```
 
-## 我们还没有做的事情
+## v10.todo list 我们还没有做的事情
 
 虽然我们已经有了很好的开端，但是还有很多事情没有做：
 
@@ -755,7 +720,7 @@ curl -H "Content-Type: application/json" -d '{"name": "New Todo"}' http://localh
 
 eTag - 如果你正在构建一些需要扩展的东西，你可能需要实现eTag。
 
-## 还有什么?
+### 还有什么?
 
 对于所有项目来说，开始都很小，但是很快就变得失控了。但是如果我们想要将它带到另外一个层次， 让他生产就绪， 还有一些额外的事情需要做:
 
@@ -766,6 +731,8 @@ eTag - 如果你正在构建一些需要扩展的东西，你可能需要实现e
 ## 源代码
 
 [https://github.com/corylanou/...](https://github.com/corylanou/tns-restful-json-api)
+
+[对应的思维导图]()
 
 ## 总结
 
